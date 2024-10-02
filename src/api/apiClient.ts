@@ -13,7 +13,9 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = Cookies.get('token'); // Adjust the cookie name if different
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      if (config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
