@@ -1,18 +1,20 @@
-import React, { useRef } from 'react';
-import { Canvas, useFrame, extend } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import React, { Suspense, useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF, SoftShadows } from '@react-three/drei';
+import CanvasLoader from './CanvasLoader';
 import * as THREE from 'three';
 
-// Extend the THREE namespace with PlaneGeometry
-extend({ PlaneGeometry: THREE.PlaneGeometry });
-
 function Model(props: JSX.IntrinsicElements['group']) {
-  const { scene } = useGLTF('/models/gym_equipment.glb'); // Update the path to your model
   const ref = useRef<THREE.Object3D>();
+  const { scene } = useGLTF('/models/gym_equipment.glb');
+  const [rotationSpeed, setRotationSpeed] = useState(0.1); // Initial high speed
 
-  useFrame(() => { /* Rotate the model
+  useFrame(() => {
     if (ref.current) {
-      ref.current.rotation.y += 0.01;*/
+      // Gradually decrease the rotation speed
+      setRotationSpeed((prevSpeed) => Math.max(0.005, prevSpeed * 0.99));
+      ref.current.rotation.y += rotationSpeed;
+    }
   });
 
   // Enable shadow casting and receiving for the model
@@ -27,33 +29,64 @@ function Model(props: JSX.IntrinsicElements['group']) {
 }
 
 export default function RotatingModel() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 500px)");
+
+    // Set the initial value of the `isMobile` state variable
+    setIsMobile(mediaQuery.matches);
+
+    // Define a callback function to handle changes to the media query
+    const handleMediaQueryChange = (event: { matches: boolean }) => {
+      setIsMobile(event.matches);
+    };
+
+    // Add the callback function as a listener for changes to the media query
+    mediaQuery.addEventListener("change", handleMediaQueryChange);
+
+    // Remove the listener when the component is unmounted
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaQueryChange);
+    };
+  }, []);
+
   return (
-    <Canvas shadows camera={{ position: [6, 5, 10], fov: 50 }}> {/* Adjust camera position to zoom out */}
-      <ambientLight intensity={0.5} /> {/* General ambient light */}
-      <hemisphereLight intensity={0.15} groundColor='black' /> {/* Soft light from above and below */}
-      <spotLight
-        position={[0, 10, 0]} // Position the spotlight above the model
-        angle={0.3} // Angle of the spotlight
-        penumbra={1} // Softness of the spotlight edges
-        intensity={2} // Brightness of the spotlight
-        castShadow // Enable shadow casting
-        shadow-mapSize-width={1024} // Shadow map resolution
-        shadow-mapSize-height={1024} // Shadow map resolution
-      />
-      <pointLight position={[10, 10, 10]} /> {/* Additional point light */}
-      <pointLight intensity={100} /> {/* Another point light with high intensity */}
-      <Model scale={[0.5, 0.5, 0.5]} /> {/* Render the 3D model */}
-      <OrbitControls 
-      enableZoom = {false} 
-      enablePan = {false}
-      maxPolarAngle={Math.PI / 3}
-      minPolarAngle={Math.PI / 3}
-      /> {/* Enable orbit controls for the camera */}
-      {/* Add a ground plane to visualize shadows */}
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
-        <planeGeometry args={[10, 10]} /> {/* Ground plane geometry */}
-        <shadowMaterial opacity={0.5} /> {/* Material to receive shadows */}
-      </mesh>
+    <Canvas
+      shadows
+      camera={{
+        position: isMobile ? [3, 3, 5] : [6, 6, 10], // Adjust camera position for mobile
+        fov: 50,
+      }}
+    >
+      <SoftShadows size={10} samples={30} focus={0.5} />
+      <Suspense fallback={<CanvasLoader />}>
+        <ambientLight intensity={0.5} />
+        <hemisphereLight intensity={0.15} groundColor='black' />
+        <spotLight
+          position={[0, 10, 0]}
+          angle={0.3}
+          penumbra={1}
+          intensity={2}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-bias={-0.0001}
+        />
+        <pointLight position={[10, 10, 10]} />
+        <pointLight intensity={100} />
+        <Model scale={isMobile ? [0.3, 0.3, 0.3] : [0.5, 0.5, 0.5]} />
+        <OrbitControls 
+          enableZoom={false} 
+          enablePan={false}
+          maxPolarAngle={Math.PI / 3}
+          minPolarAngle={Math.PI / 3}
+        />
+        <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
+          <circleGeometry args={[5, 64]} />
+          <shadowMaterial opacity={0.2} />
+        </mesh>
+      </Suspense>
     </Canvas>
   );
 }

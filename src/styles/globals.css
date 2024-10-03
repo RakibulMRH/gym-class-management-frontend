@@ -79,11 +79,27 @@
     @apply bg-background text-foreground;
   }
 }
+
 .bg-floating-cogs {
   background-image: url('../../public/topography.svg'); /* Update the path to your SVG file */
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+}
+
+.canvas-loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #3b82f6; /* Match the color of the text */
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 /* Custom button styles */
 @layer components {
