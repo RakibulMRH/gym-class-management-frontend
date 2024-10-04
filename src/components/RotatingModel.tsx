@@ -55,7 +55,7 @@ export default function RotatingModel() {
     <Canvas
       shadows
       camera={{
-        position: isMobile ? [3, 3, 5] : [6, 6, 10], // Adjust camera position for mobile
+        position: isMobile ? [3, 3, 5] : [6, 6, 10],  
         fov: 50,
       }}
     >
