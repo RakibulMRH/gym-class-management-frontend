@@ -1,26 +1,52 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import  { isAxiosError } from 'axios';   
-import apiClient from '../pages/api/apiClient';
+import { isAxiosError } from 'axios';
+import { jwtDecode } from "jwt-decode";
+import apiClient from '../../pages/api/apiClient';
 
 interface AuthState {
+  user: { 
+    name: string; 
+    role: string; 
+    email: string;
+  };
   token: string | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
 const initialState: AuthState = {
+  user: { 
+    name: '', 
+    role: '', 
+    email: ''
+  },
   token: null,
   status: 'idle',
   error: null,
 };
 
-// Define the response type for login and register
+// Define the response type for login
 interface AuthResponse {
-  token: string;
+  data: {
+    token: string;
+  };
+  user: {
+    name: string;
+    role: string;
+    email: string;
+  };
 }
 
 interface AuthError {
   message: string;
+}
+
+// Define the type for the decoded token
+interface DecodedToken {
+  userId: number;
+  role: string;
+  email: string;
+  name: string;
 }
 
 // Async thunk for login
@@ -28,8 +54,15 @@ export const loginUser = createAsyncThunk<AuthResponse, { email: string; passwor
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-      return response.data;
+      const response = await apiClient.post<{ data: { token: string } }>('/auth/login', credentials);
+      const token = response.data.data.token; // Extract token from response
+      
+      localStorage.setItem('token', token); // Store the token in local storage
+      
+      // Decode the token to extract user information
+      const decoded: DecodedToken = jwtDecode(token);
+      
+      return { data: { token }, user: { name: decoded.name, role: decoded.role, email: decoded.email } };
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         return rejectWithValue(error.response.data as AuthError);
@@ -45,7 +78,10 @@ export const registerUser = createAsyncThunk<void, { email: string; password: st
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      await apiClient.post<void>('/auth/register', userData);
+      // Add the fixed role to the userData
+      const dataWithRole = { ...userData, role: 'TRAINEE' };
+      
+      await apiClient.post<void>('/auth/register', dataWithRole);
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         return rejectWithValue(error.response.data as AuthError);
@@ -62,6 +98,8 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.token = null;
+      state.user = { name: '', role: '', email: '' };
+      localStorage.removeItem('token'); // Remove token on logout
     },
   },
   extraReducers: (builder) => {
@@ -70,7 +108,8 @@ const authSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.token = action.payload.token;
+        state.token = action.payload.data.token;
+        state.user = action.payload.user;
         state.status = 'succeeded';
         state.error = null;
       })

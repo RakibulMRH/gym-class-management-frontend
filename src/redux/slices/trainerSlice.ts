@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import  { isAxiosError } from 'axios';  // <-- Import isAxiosError
-import apiClient from '../pages/api/apiClient';
+import apiClient from '../../pages/api/apiClient';
 
 interface Trainer {
   id: string;
