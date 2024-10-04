@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router'; 
-import { motion } from 'framer-motion';
-import { register } from '@/pages/api/auth';
+import { useAppDispatch, useAppSelector } from '@/hooks';
+import { registerUser } from '@/slices/authSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label'; 
+import { Label } from '@/components/ui/label';
+import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
+import { motion } from 'framer-motion';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -13,39 +14,30 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter(); 
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  const dispatch = useAppDispatch();
+  const { status } = useAppSelector((state) => state.auth);
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (status === 'succeeded') {
+      router.push('/login'); // Redirect after successful registration
+    }
+  }, [status, router]);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
     if (password !== confirmPassword) {
       setError('Passwords do not match');
-      setIsLoading(false);
       return;
     }
-
-    try {
-      await register(email, password, fullName);
-      router.push('/dashboard');
-    } catch {
-      setError('Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    dispatch(registerUser({ email, password, fullName }));
   };
 
-  if (!mounted) return null;
-
   return (
-    <>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <NavBar />
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center sm: lg: transition-colors duration-300">      
+      <div className="flex flex-col justify-center items-center min-h-screen">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-0 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Create your account
@@ -116,13 +108,11 @@ export default function Register() {
                 />
               </div>
 
-              {error && (
-                <div className="text-red-600 text-sm">{error}</div>
-              )}
+              {error && <div className="text-red-600 text-sm">{error}</div>}
 
               <div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Registering...' : 'Register'}
+                <Button type="submit" className="w-full" disabled={status === 'loading'}>
+                  {status === 'loading' ? 'Registering...' : 'Register'}
                 </Button>
               </div>
             </form>
@@ -182,13 +172,13 @@ export default function Register() {
               </div>
 
               <div className="mt-6">
-                <Button variant="outline" className="w-full" onClick={() => router.push('/#login')}> Sign in
+                <Button variant="outline" className="w-full" onClick={() => router.push('/login')}> Sign in
                 </Button>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -24,7 +24,7 @@ export default function NavBar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <Image src="/logo.png" alt="GymXYZ Logo" width={40} height={40} />
+              <Image src="/logo.png" alt="GymXYZ Logo" width={150} height={60} />
             </Link>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
@@ -44,7 +44,7 @@ export default function NavBar() {
                 {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
               {!isRegisterPage && (
-                <Button variant="default" className="ml-4" onClick={() => router.push('/#login')}>Login</Button>
+                <Button variant="default" className="ml-4" onClick={() => router.push('/login')}>Login</Button>
               )}
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function NavBar() {
                 <Button variant="ghost" size="sm" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                   {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </Button>
-                <Button variant="default" className="ml-auto" onClick={() => router.push('/#login')}>Login</Button>
+                <Button variant="default" className="ml-auto" onClick={() => router.push('/login')}>Login</Button>
               </div>
             </div>
           )}
