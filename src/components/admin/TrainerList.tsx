@@ -6,8 +6,9 @@ import { Button } from '../ui/button';
 
 interface Trainer {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
+  role: string;
 }
 
 interface TrainerListProps {
@@ -34,11 +35,10 @@ const TrainerList: React.FC<TrainerListProps> = ({ trainers }) => {
         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
           {trainers.map((trainer) => (
             <tr key={trainer.id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{trainer.name}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{trainer.fullName}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{trainer.email}</td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <Button variant="outline" size="sm" className="mr-2">Edit</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(trainer.id)}>Delete</Button>
+                <Button onClick={() => handleDelete(trainer.id)}>Delete</Button>
               </td>
             </tr>
           ))}

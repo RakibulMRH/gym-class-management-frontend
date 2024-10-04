@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { isAxiosError } from 'axios';
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from 'jwt-decode';
 import apiClient from '../../pages/api/apiClient';
 
 interface AuthState {
@@ -12,6 +12,7 @@ interface AuthState {
   token: string | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
+  errorDetails: { field: string; message: string } | null;
 }
 
 const initialState: AuthState = {
@@ -23,6 +24,7 @@ const initialState: AuthState = {
   token: null,
   status: 'idle',
   error: null,
+  errorDetails: null,
 };
 
 // Define the response type for login
@@ -39,6 +41,10 @@ interface AuthResponse {
 
 interface AuthError {
   message: string;
+  errorDetails?: {
+    field: string;
+    message: string;
+  } | string;
 }
 
 // Define the type for the decoded token
@@ -106,26 +112,34 @@ const authSlice = createSlice({
     builder
       .addCase(loginUser.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
+        state.errorDetails = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.token = action.payload.data.token;
         state.user = action.payload.user;
         state.status = 'succeeded';
         state.error = null;
+        state.errorDetails = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload ? action.payload.message : 'Login failed';
+        state.errorDetails = typeof action.payload?.errorDetails === 'string' ? { field: 'unknown', message: action.payload.errorDetails } : action.payload?.errorDetails || null;
         state.status = 'failed';
       })
       .addCase(registerUser.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
+        state.errorDetails = null;
       })
       .addCase(registerUser.fulfilled, (state) => {
         state.status = 'succeeded';
         state.error = null;
+        state.errorDetails = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload ? action.payload.message : 'Registration failed';
+        state.errorDetails = typeof action.payload?.errorDetails === 'string' ? { field: 'unknown', message: action.payload.errorDetails } : action.payload?.errorDetails || null;
         state.status = 'failed';
       });
   },

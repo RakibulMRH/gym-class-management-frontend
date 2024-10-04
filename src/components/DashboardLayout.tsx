@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
@@ -13,13 +13,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const router = useRouter();
   const { token, status } = useSelector((state: RootState) => state.auth);
 
+  useEffect(() => {
+    if (status !== 'loading' && !token) {
+      router.push('/login');
+    }
+  }, [status, token, router]);
+
   if (status === 'loading') {
     return <div>Loading...</div>;
   }
 
   if (!token) {
-    router.push('/login');
-    return null;
+    return null; // Return null while redirecting
   }
 
   return (

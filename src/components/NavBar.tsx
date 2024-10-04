@@ -38,7 +38,7 @@ export default function NavBar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <Image src="/logo.png" alt="GymXYZ Logo" width={40} height={40} />
+              <Image src="/logo.png" alt="GymXYZ Logo" width={150} height={40} />
             </Link>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">

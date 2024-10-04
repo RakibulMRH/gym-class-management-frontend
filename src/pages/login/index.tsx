@@ -5,7 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import NavBar from '@/components/NavBar';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import {jwtDecode} from 'jwt-decode';
+
+interface DecodedToken {
+  userId: number;
+  role: string;
+  email: string;
+  name: string;
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -18,7 +28,20 @@ export default function Login() {
 
   useEffect(() => {
     if (token) {
-      router.push('/dashboard'); // Redirect to dashboard after successful login
+      const decoded: DecodedToken = jwtDecode(token);
+      if (decoded.role === 'ADMIN') {
+        router.push('/admin/dashboard'); // Redirect to admin dashboard
+        
+      } 
+
+      if (decoded.role === 'TRAINER') {
+        router.push('/trainer/dashboard'); // Redirect to TRAINEER dashboard
+        
+      }
+      if (decoded.role === 'TRAINEE') {
+        router.push('/trainee/dashboard'); // Redirect to TRAINEE dashboard
+        
+      }  
     }
   }, [token, router]);
 
@@ -34,59 +57,90 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       <NavBar />
-      <main>
-        <section id="login" className="py-12 bg-gray-50 dark:bg-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-lg mx-auto md:max-w-none md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white sm:text-3xl">
-                  Login to Your Account
-                </h2>
-                <div className="mt-8">
-                  <form className="space-y-6" onSubmit={handleLogin}>
-                    <div>
-                      <Label htmlFor="email">Email address</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="relative">
-                      <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        name="password"
-                        type={isPasswordVisible ? 'text' : 'password'}
-                        autoComplete="current-password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-11 right-3 pr-0 flex items-center text-gray-400"
-                        onClick={togglePasswordVisibility}
-                      >
-                        {isPasswordVisible ? 'Hide' : 'Show'}
-                      </button>
-                    </div>
-                    {error && <p className="text-red-500">{error}</p>}
-                    <div>
-                      <Button type="submit" className="w-full" disabled={status === 'loading'}>
-                        {status === 'loading' ? 'Signing in...' : 'Sign in'}
-                      </Button>
-                    </div>
-                  </form>
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Sign in to your account
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+              Enter your email and password to access your account
+            </p>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Email address
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={isPasswordVisible ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {isPasswordVisible ? (
+                      <EyeOffIcon className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                    )}
+                    <span className="sr-only">
+                      {isPasswordVisible ? 'Hide password' : 'Show password'}
+                    </span>
+                  </button>
                 </div>
               </div>
-            </div>
+              {error && (
+                <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                  {error}
+                </p>
+              )}
+              <Button
+                type="submit"
+                className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium dark:text-black text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                disabled={status === 'loading'}
+              >
+                {status === 'loading' ? 'Signing in...' : 'Sign in'}
+              </Button>
+            </form>
           </div>
-        </section>
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+            <p className="text-sm text-center text-gray-600 dark:text-gray-300">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/register"
+                className="font-medium text-primary hover:text-primary-dark"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
+        </div>
       </main>
     </div>
   );

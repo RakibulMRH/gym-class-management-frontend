@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import  { isAxiosError } from 'axios';  // <-- Import isAxiosError
+import { isAxiosError } from 'axios';
 import apiClient from '../../pages/api/apiClient';
 
 interface Trainer {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
+  role: string;
 }
 
 interface TrainerState {
@@ -47,7 +48,7 @@ export const fetchTrainers = createAsyncThunk<Trainer[], void, { rejectValue: Tr
 );
 
 // Create a new trainer
-export const createTrainer = createAsyncThunk<Trainer, { name: string; email: string }, { rejectValue: TrainerError }>(
+export const createTrainer = createAsyncThunk<Trainer, { fullName: string; email: string; password: string }, { rejectValue: TrainerError }>(
   'trainers/create',
   async (trainerData, { rejectWithValue }) => {
     try {
@@ -64,7 +65,7 @@ export const createTrainer = createAsyncThunk<Trainer, { name: string; email: st
 );
 
 // Update an existing trainer
-export const updateTrainer = createAsyncThunk<Trainer, { id: string; trainerData: { name: string; email: string } }, { rejectValue: TrainerError }>(
+export const updateTrainer = createAsyncThunk<Trainer, { id: string; trainerData: { fullName: string; email: string } }, { rejectValue: TrainerError }>(
   'trainers/update',
   async ({ id, trainerData }, { rejectWithValue }) => {
     try {
