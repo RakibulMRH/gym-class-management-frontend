@@ -69,7 +69,7 @@ export default function Login() {
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-12 right-3 pr-0 flex items-center text-gray-400"
+                        className="absolute inset-y-11 right-3 pr-0 flex items-center text-gray-400"
                         onClick={togglePasswordVisibility}
                       >
                         {isPasswordVisible ? 'Hide' : 'Show'}
